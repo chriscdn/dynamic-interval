@@ -1,3 +1,12 @@
+type CallbackContext<T extends (...args: any[]) => any> = {
+    runCount: number;
+    tick: number;
+    results: Awaited<ReturnType<T>> | undefined;
+    previousResults: Awaited<ReturnType<T>> | undefined;
+    error: unknown;
+    resetRunCount: () => void;
+    cancel: () => void;
+};
 /**
  * A `setInterval` alternative that recalculates the delay after each execution
  * and provides lifecycle controls directly within the iteration logic.
@@ -16,18 +25,10 @@
  * - `restart`: Resets the session, clears counts, and starts the loop again.
  * - `resetRunCount`: Sets the `runCount` back to -1 (the next iteration will be 0).
  */
-declare const setIntervalDynamic: <T extends (...args: any[]) => any>(fn: T, callback: (context: {
-    runCount: number;
-    tick: number;
-    results: Awaited<ReturnType<T>> | undefined;
-    previousResults: Awaited<ReturnType<T>> | undefined;
-    error: unknown;
-    resetRunCount: () => void;
-    cancel: () => void;
-}) => number, initialDelay?: number) => {
+declare const setIntervalDynamic: <T extends (...args: any[]) => any>(fn: T, callback: (context: CallbackContext<T>) => number, initialDelay?: number) => {
     restart: (delay?: number) => void;
     cancel: () => void;
     resetRunCount: () => void;
 };
 
-export { setIntervalDynamic };
+export { type CallbackContext, setIntervalDynamic };

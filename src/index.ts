@@ -1,3 +1,28 @@
+type CallbackContext<T extends (...args: any[]) => any> = {
+  // The 0-based index of iterations since the last reset or restart.
+  runCount: number;
+
+  // The 0-based index of total iterations since the initial call, which is never reset.
+  tick: number;
+
+  // The resolved value of the `fn` call for this iteration.
+  results: Awaited<ReturnType<T>> | undefined;
+
+  // The results from the previous iteration. Undefined on first call.
+  previousResults: Awaited<ReturnType<T>> | undefined;
+
+  // The error if `fn` rejects or throws.
+  error: unknown;
+
+  // Resets the `runCount`. Useful for logic that relies on incremental
+  // backoff or retry limits.
+  resetRunCount: () => void;
+
+  // Terminate the loop. No further timeouts will be scheduled
+  // after this is called. Can be restarted with `restart()`.
+  cancel: () => void;
+};
+
 /**
  * A `setInterval` alternative that recalculates the delay after each execution
  * and provides lifecycle controls directly within the iteration logic.
@@ -18,30 +43,7 @@
  */
 const setIntervalDynamic = <T extends (...args: any[]) => any>(
   fn: T,
-  callback: (context: {
-    // The 0-based index of iterations since the last reset or restart.
-    runCount: number;
-
-    // The 0-based index of total iterations since the initial call, which is never reset.
-    tick: number;
-
-    // The resolved value of the `fn` call for this iteration.
-    results: Awaited<ReturnType<T>> | undefined;
-
-    // The results from the previous iteration. Undefined on first call.
-    previousResults: Awaited<ReturnType<T>> | undefined;
-
-    // The error if `fn` rejects or throws.
-    error: unknown;
-
-    // Resets the `runCount`. Useful for logic that relies on incremental
-    // backoff or retry limits.
-    resetRunCount: () => void;
-
-    // Terminate the loop. No further timeouts will be scheduled
-    // after this is called. Can be restarted with `restart()`.
-    cancel: () => void;
-  }) => number,
+  callback: (context: CallbackContext<T>) => number,
   initialDelay = 0,
 ) => {
   // Tracks iterations for the current "session"; reset by `resetRunCount`.
@@ -138,4 +140,4 @@ const setIntervalDynamic = <T extends (...args: any[]) => any>(
   return { restart, cancel, resetRunCount };
 };
 
-export { setIntervalDynamic };
+export { setIntervalDynamic, type CallbackContext };
