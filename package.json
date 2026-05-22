@@ -1,6 +1,6 @@
 {
   "name": "@chriscdn/dynamic-interval",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A setInterval alternative that recalculates delay after each run.",
   "repository": "https://github.com/chriscdn/dynamic-interval",
   "author": "Christopher Meyer <chris@schwiiz.org>",
